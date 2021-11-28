@@ -9,6 +9,31 @@ networks:
   back-tier:
 
 services:
+
+  pihole:
+    container_name: pihole
+    image: pihole/pihole:latest
+    ports:
+      - "153:53/tcp"
+      - "153:53/udp"
+      - "67:67/udp"
+      - "80:80/tcp"
+    environment:
+      TZ: 'America/Vancouver'
+      WEBPASSWORD: admin
+    # Volumes store your data between container upgrades
+    volumes:
+      - './pihole/etc/pihole/setupVars.conf:/etc/pihole/setupVars.conf'
+      - './pihole/etc/pihole/custom.list:/etc/pihole/custom.list'
+      - './pihole/etc/pihole/pihole-FTL.conf:/etc/pihole/pihole-FTL.conf'
+      - './pihole/etc/pihole/dhcp.leases:/etc/pihole/dhcp.leases'
+      - './pihole/etc/dnsmasq.d/:/etc/dnsmasq.d/'
+    # Recommended but not required (DHCP needs NET_ADMIN)
+    #   https://github.com/pi-hole/docker-pi-hole#note-on-capabilities
+    cap_add:
+      - NET_ADMIN
+    restart: unless-stopped
+
   prometheus:
     image: prom/prometheus
     restart: unless-stopped
