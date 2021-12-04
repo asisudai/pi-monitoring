@@ -14,17 +14,24 @@ services:
 
   pihole:
     container_name: pihole
+    hostname: pihole
     image: pihole/pihole:latest
-    ports:
-      - "53:53/tcp"
-      - "53:53/udp"
-      - "67:67/udp"
-      - "80:80/tcp"
+    network_mode: "host"
+    # ports:
+    #   - "53:53/tcp"
+    #   - "53:53/udp"
+    #   - "67:67/udp"
+    #   - "80:80/tcp"
     environment:
       TZ: "America/Vancouver"
       WEBPASSWORD: admin
-      ServerIP: 192.168.1.4
-      # DHCP_ACTIVE: "true"
+      ServerIP: 192.168.1.2
+      DHCP_ACTIVE: "true"
+      DHCP_START: 192.168.1.20
+      DHCP_END: 192.168.1.80
+      DHCP_ROUTER: 192.168.1.1
+      DHCP_LEASETIME: 78
+      VIRTUAL_HOST: pi
       PIHOLE_DOMAIN: "nelson"
       TEMPERATUREUNIT: c
       WEBUIBOXEDLAYOUT: traditional
@@ -43,12 +50,10 @@ services:
     cap_add:
       - NET_ADMIN
     restart: unless-stopped
-    networks:
-      - back-tier
-      - front-tier
 
   prometheus:
     container_name: prometheus
+    # hostname: prometheus
     image: prom/prometheus
     restart: unless-stopped
     volumes:
@@ -69,6 +74,7 @@ services:
 
   grafana:
     container_name: grafana
+    # hostname: grafana
     image: grafana/grafana
     restart: always
     volumes:
