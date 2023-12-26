@@ -1,10 +1,14 @@
 version: "3.1"
 
 volumes:
-    prometheus_data: {}
-    grafana_data: {}
-    pihole_pihole: {}
-    pihole_dnsmasq: {}
+    prometheus_data:
+    grafana_data:
+    pihole_pihole:
+    pihole_dnsmasq:
+    netdataconfig:
+    netdatalib:
+    netdatacache:
+
 
 networks:
   front-tier:
@@ -12,11 +16,44 @@ networks:
 
 services:
 
+  netdata:
+      image: netdata/netdata
+      container_name: netdata
+      hostname: pihole.com # set to fqdn of host
+      ports:
+        - 19999:19999
+      restart: unless-stopped
+      cap_add:
+        - SYS_PTRACE
+      security_opt:
+        - apparmor:unconfined
+      volumes:
+        - netdataconfig:/etc/netdata
+        - netdatalib:/var/lib/netdata
+        - netdatacache:/var/cache/netdata
+        - /etc/passwd:/host/etc/passwd:ro
+        - /etc/group:/host/etc/group:ro
+        - /proc:/host/proc:ro
+        - /sys:/host/sys:ro
+        - /etc/os-release:/host/etc/os-release:ro
+
+  nginx:
+    container_name: nginx
+    image: nginx:alpine
+    restart: unless-stopped
+    tty: true
+    ports:
+        - "80:80"
+        - "443:443"
+    volumes:
+        - ./nginx/conf.d/:/etc/nginx/conf.d/
+
   pihole:
     container_name: pihole
     hostname: pihole
     image: pihole/pihole:latest
     network_mode: "host"
+    # For DHCP it is recommended to remove these ports and instead add: network_mode: "host"
     # ports:
     #   - "53:53/tcp"
     #   - "53:53/udp"
@@ -38,6 +75,7 @@ services:
       QUERY_LOGGING: "true"
       WEBTHEME: "dark"
       PIHOLE_DNS_: 9.9.9.9;149.112.112.112
+      WEB_PORT: 8081
     # Volumes store your data between container upgrades
     volumes:
       # - './etc/pihole/:/etc/pihole/'
@@ -74,7 +112,6 @@ services:
 
   grafana:
     container_name: grafana
-    # hostname: grafana
     image: grafana/grafana
     restart: always
     volumes:
