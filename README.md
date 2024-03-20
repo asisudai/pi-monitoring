@@ -8,6 +8,10 @@ Stand-up a Docker [Prometheus](http://prometheus.io/) stack containing Prometheu
 
 Make sure Docker and [Docker Compose](https://docs.docker.com/compose/install/) are installed on your Docker host machine.
 
+
+Disable local dns resolved to free up port 53 for pihole.
+https://www.linuxuprising.com/2020/07/ubuntu-how-to-free-up-port-53-used-by.html
+
 ## Quick Start
 
 ```
